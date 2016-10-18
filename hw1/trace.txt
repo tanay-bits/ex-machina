@@ -1,0 +1,14 @@
+***
+Solution trace is a list of states, from initial to final, where each state is a nested list representing the pegs and their corresponding disks in order from biggest to smallest.
+***
+
+>> python tower.py
+Enter the number of pegs (at least 3): 3
+Enter the number of disks (at least 2): 5
+Enter the search strategy ("bfs", "dfs", or "bestfirst"): "bestfirst"
+Solution found!
+Solution trace: 
+[[[5, 4, 3, 2, 1], [], []], [[5, 4, 3, 2], [], [1]], [[5, 4, 3], [2], [1]], [[5, 4, 3], [2, 1], []], [[5, 4], [2, 1], [3]], [[5, 4, 1], [2], [3]], [[5, 4, 1], [], [3, 2]], [[5, 4], [], [3, 2, 1]], [[5], [4], [3, 2, 1]], [[5], [4, 1], [3, 2]], [[5, 2], [4, 1], [3]], [[5, 2, 1], [4], [3]], [[5, 2, 1], [4, 3], []], [[5, 2], [4, 3], [1]], [[5], [4, 3, 2], [1]], [[5], [4, 3, 2, 1], []], [[], [4, 3, 2, 1], [5]], [[1], [4, 3, 2], [5]], [[1], [4, 3], [5, 2]], [[], [4, 3], [5, 2, 1]], [[3], [4], [5, 2, 1]], [[3], [4, 1], [5, 2]], [[3, 2], [4, 1], [5]], [[3, 2, 1], [4], [5]], [[3, 2, 1], [], [5, 4]], [[3, 2], [], [5, 4, 1]], [[3], [2], [5, 4, 1]], [[3], [2, 1], [5, 4]], [[], [2, 1], [5, 4, 3]], [[1], [2], [5, 4, 3]], [[1], [], [5, 4, 3, 2]], [[], [], [5, 4, 3, 2, 1]]]
+Number of moves: 
+31
+Number of search iterations: 151
