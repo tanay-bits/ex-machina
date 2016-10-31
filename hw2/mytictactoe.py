@@ -16,6 +16,9 @@ class Node:
         self.state = board
         self.machine_symbol = machine_symbol
         self.active_player = active_player
+        self.alpha = -1000
+        self.beta = 1000
+        self.move = None
         self.choice = None
         
     # check for game end state - either someone wins or board is full:
@@ -53,6 +56,7 @@ class Node:
                 
             new_active_player = switchPlayer(self.active_player)
             child_node = Node(boardCopy, self.machine_symbol, new_active_player)
+            child_node.move = spot
             return child_node
         else:
             print "You are testing a result from an INVALID move!"   #debug code
@@ -80,28 +84,37 @@ def finalScore(node):
     else:
         sys.exit("Cannot get score unless at end state!")
 
-# minimax algorithm:
-def minimax(node):
+# alpha-beta algorithm:
+def alphabeta(node):
     if node.endTest():
         final_score = finalScore(node)
         return final_score
     
-    scores = []
-    moves = []
-    
+    children = []    
     for available_spot in node.spots():
         possible_node = node.result(available_spot)
-        scores.append(minimax(possible_node))
-        moves.append(available_spot)
+        children.append(possible_node)
         
     if node.active_player == node.machine_symbol:
-        ind_max_score = scores.index(max(scores))
-        node.choice = moves[ind_max_score]
-        return scores[ind_max_score]
+        for child in children:
+            score = alphabeta(child)
+            if score > node.alpha:
+                node.alpha = score
+                node.choice = child.move
+            if node.alpha >= node.beta:
+                node.choice = child.move
+                return node.alpha
+        return node.alpha
     else:
-        ind_min_score = scores.index(min(scores))
-        node.choice = moves[ind_min_score]
-        return scores[ind_min_score]
+        for child in children:
+            score = alphabeta(child)
+            if score < node.beta:
+                node.beta = score
+                node.choice = child.move
+            if node.alpha >= node.beta:
+                node.choice = child.move
+                return node.beta
+        return node.beta
 
 # function used in GameApp:
 def mymove(board, machine_symbol):
@@ -111,6 +124,6 @@ def mymove(board, machine_symbol):
     print machine_symbol
 
     initial_node = Node(board, machine_symbol, machine_symbol)
-    utility = minimax(initial_node)
+    utility = alphabeta(initial_node)
     bestmove = initial_node.choice
     return bestmove
