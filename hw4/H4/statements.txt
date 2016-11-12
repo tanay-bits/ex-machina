@@ -1,0 +1,77 @@
+fact: (isa cube block)
+fact: (isa pyramid block)
+fact: (isa sphere block)
+fact: (isa rectangles block)
+
+fact: (bigger rectangles cubes)
+
+fact: (isa box container)
+
+fact: (isa table surface)
+
+fact: (clear table)
+
+fact: (isa cube surface)
+fact: (isa rectangle surface)
+
+fact: (inst pyramid1 pyramid)
+fact: (color pyramid1 blue)
+fact: (inst pyramid2 pyramid)
+fact: (color pyramid2 green)
+fact: (inst pyramid3 pyramid)
+fact: (color pyramid3 red)
+fact: (inst pyramid4 pyramid)
+fact: (color pyramid4 red)
+
+fact: (inst cube1 cube)
+fact: (color cube1 blue)
+fact: (inst cube2 cube)
+fact: (color cube2 green)
+fact: (inst cube3 cube)
+fact: (color cube3 red)
+fact: (inst cube4 cube)
+fact: (color cube4 red)
+
+fact: (inst rectangle1 rectangle)
+fact: (color rectangle1 blue)
+fact: (inst rectangle2 rectangle)
+fact: (color rectangle2 green)
+fact: (inst rectangle3 rectangle)
+fact: (color rectangle3 red)
+fact: (inst rectangle4 rectangle)
+fact: (color rectangle4 red)
+
+fact: (inst sphere1 sphere)
+fact: (color sphere1 blue)
+fact: (inst sphere2 sphere)
+fact: (color sphere2 green)
+fact: (inst sphere3 sphere)
+fact: (color sphere3 red)
+fact: (inst sphere4 sphere)
+fact: (color sphere4 red)
+
+fact: (inst box1 box)
+fact: (inst box2 box)
+fact: (size box1 big)
+fact: (size box2 small)
+fact: (empty box1)
+fact: (empty box2)
+
+fact: (inst table1 table)
+fact: (clear cube1)
+
+
+rule: ((inst ?x block) (clear ?x)) -> (liftable ?x)
+rule: ((inst ?x surface) (clear ?x)) -> (puttable ?x)
+rule: ((inst ?x ?y) (isa ?y ?z)) -> (inst ?x ?z)
+rule: ((inst ?x box) (empty ?x) (put ?x )) -> (full ?x)
+
+rule: (full ?x) -> ~(empty ?x)
+rule: (empty ?x) -> ~(full ?x)
+
+rule: ((bigger ?x ?y)) -> (smaller ?y ?x)
+
+rule: ((on ?x ?y)) -> (covered ?y)
+
+rule: ((covered ?y)) -> ~(clear ?y)
+rule: ((clear ?y)) -> ~(covered ?y)
