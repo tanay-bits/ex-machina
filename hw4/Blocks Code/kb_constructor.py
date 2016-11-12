@@ -38,6 +38,17 @@ def assert_retract(fb, rb):
                 assert_retract(fb, rb)
     return fb, rb
 
+def ask(patterns, fb):
+    bindings_list = []
+    for pattern in patterns:
+        pattern_statement = facts_and_rules.statement(pattern)
+        for f in fb:
+            bindings = facts_and_rules.match(pattern_statement, f)
+            if bindings != False:
+                bindings_list.append(bindings)
+    return bindings_list
+
+
 # Main function:
 if __name__ == '__main__':
     facts, rules = read.read_tokenize("statements.txt")
@@ -63,7 +74,10 @@ if __name__ == '__main__':
         print r.pretty()
     print len(RB)
 
-    # print "############################"
+    print "############################"
+
+    bl = ask([['color', '?x', 'blue'], ['color', '?y', 'red'], ['flat', '?z'], ['inst', 'bigbox', '?w']], FB)
+    print bl
 
     # FB, RB = assert_retract(FB, RB)
     
