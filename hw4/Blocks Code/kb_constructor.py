@@ -239,21 +239,38 @@ if __name__ == '__main__':
     print "no. of rules: ", len(RB)
     print "----------------------------"
 
-    # prompt user to ASK or ASSERT
+    # prompt user to ASK or ASSERT or QUIT
     prompt_flag = True
     while (prompt_flag == True):
-        option = input("What do you want to do? (Enter \"ask\" or \"assert\" or \"quit\", with quotes):\n")
+        while (True):
+            try:
+                option = input("What do you want to do? (Enter \"ask\" or \"assert\" or \"quit\", with quotes):\n")
+                break
+            except SyntaxError:
+                print "Oops! That wasn't a valid input. Try again..."
+
         if (option == "ask"):
-            query = input("Enter the list of patterns to query, like \"((color ?x blue), (flat ?z))\":\n")
+            while (True):
+                try:
+                    query = input("Enter the list of patterns to query, like \"((color ?x blue), (flat ?z))\":\n")
+                    break
+                except SyntaxError:
+                    print "Oops! That wasn't a valid input. Try again..."
             query = [x.replace(')','').replace('(','').split() for x in query.strip('(').strip(')').split(',')]
             bl = ask(query, FB)
             print "For Ask query: ", query
             print "the answers are: ", bl
             print "----------------------------"
+        
         if (option == "assert"):
             prompt = "Enter the fact or rule to assert into KB, like \"fact: (clear cube3)\",\n" + \
             "or \"rule: ((married ?x ?y) (love ?x ?y)) -> (happy ?x)\", with quotes:\n"
-            assertion = input(prompt)
+            while (True):
+                try:
+                    assertion = input(prompt)
+                    break
+                except SyntaxError:
+                    print "Oops! That wasn't a valid input. Try again..."
             assertion = make_obj(assertion)
             FB, RB = assert_fr(assertion, FB, RB)
             print "Knowledge base after making assertion:"
@@ -265,7 +282,6 @@ if __name__ == '__main__':
                 print r.pretty()
             print "no. of rules: ", len(RB)
             print "----------------------------"
+        
         if (option == "quit"):
             prompt_flag = False
-
-
