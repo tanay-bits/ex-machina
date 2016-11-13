@@ -82,6 +82,16 @@ def expand_existing(fb, rb):
                 if (r.type == "Retract"):
                     fb, rb = retract_fr(inference_yield, fb, rb)
                 elif (r.type == "Assert"):
+                    if (type(inference_yield) is facts_and_rules.statement):
+                        if (inference_yield.full not in [x.full for x in f.facts]):
+                            f.add_fact(inference_yield)
+                        if (inference_yield.full not in [x.full for x in r.facts]):
+                            r.add_fact(inference_yield)
+                    elif (type(inference_yield) is facts_and_rules.rule):
+                        if (inference_yield.full not in [x.full for x in f.rules]):
+                            f.add_rule(inference_yield)
+                        if (inference_yield.full not in [x.full for x in r.rules]):
+                            r.add_rule(inference_yield)
                     fb, rb = assert_fr(inference_yield, fb, rb)
                 else:
                     raise ValueError("rule type is neither Assert nor Retract")
@@ -114,12 +124,18 @@ def assert_fr(obj, fb, rb):
                     # but first make that the child of the fact+rule that triggered the assertion
                     elif (r.type == "Assert"):
                         if (type(inference_yield) is facts_and_rules.statement):
-                            obj.add_fact(inference_yield)
-                            r.add_fact(inference_yield)
+                            if (inference_yield.full not in [x.full for x in obj.facts]):
+                                obj.add_fact(inference_yield)
+                            if (inference_yield.full not in [x.full for x in r.facts]):
+                                r.add_fact(inference_yield)
                         elif (type(inference_yield) is facts_and_rules.rule):
-                            obj.add_rule(inference_yield)
-                            r.add_rule(inference_yield)
+                            if (inference_yield.full not in [x.full for x in obj.rules]):
+                                obj.add_rule(inference_yield)
+                            if (inference_yield.full not in [x.full for x in r.rules]):
+                                r.add_rule(inference_yield)
+                        
                         fb, rb = assert_fr(inference_yield, fb, rb)
+                    
                     else:
                         raise ValueError("rule type is neither Assert nor Retract")
         return fb, rb
@@ -145,12 +161,18 @@ def assert_fr(obj, fb, rb):
                     # but first make that the child of the rule+fact that triggered the assertion
                     elif (obj.type == "Assert"):
                         if (type(inference_yield) is facts_and_rules.statement):
-                            obj.add_fact(inference_yield)
-                            f.add_fact(inference_yield)
+                            if (inference_yield.full not in [x.full for x in obj.facts]):
+                                obj.add_fact(inference_yield)
+                            if (inference_yield.full not in [x.full for x in f.facts]):
+                                f.add_fact(inference_yield)
                         elif (type(inference_yield) is facts_and_rules.rule):
-                            obj.add_rule(inference_yield)
-                            f.add_rule(inference_yield)
+                            if (inference_yield.full not in [x.full for x in obj.rules]):
+                                obj.add_rule(inference_yield)
+                            if (inference_yield.full not in [x.full for x in f.rules]):
+                                f.add_rule(inference_yield)
+                        
                         fb, rb = assert_fr(inference_yield, fb, rb)
+                    
                     else:
                         raise ValueError("rule type of obj is neither Assert nor Retract")
         return fb, rb
@@ -217,9 +239,12 @@ def ask(patterns, fb):
 if __name__ == '__main__':
     facts, rules = read.read_tokenize("statements.txt")
 
-    # populate FB and RB with initial knowledge from file
+    # Fact Base, Rule Base, and a buffer to store retracted rules/facts which can be later restored
     FB = []
     RB = []
+    # graveyard = []
+
+    # populate FB and RB with initial knowledge from file
     for f in facts:
         FB.append(facts_and_rules.statement(f))
     for r in rules:
