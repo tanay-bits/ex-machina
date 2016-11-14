@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+### TEAM MEMBERS: Tanay Choudhary, Fan Bai ###
+
 import facts_and_rules, read
 
 '''
@@ -79,8 +81,19 @@ def expand_existing(fb, rb):
         for f in fb:
             inference_yield = infer_from_fact(f, r, fb, rb)
             if (inference_yield != False):
+                
+                # if the rule+fact triggers a retraction, remove the now invalidated FACT
+                # and all facts/rules that it supports, but first add it's anti-fact as child
                 if (r.type == "Retract"):
+                    antiFact = facts_and_rules.statement(inference_yield.full)
+                    antiFact.predicate = '~' + inference_yield.predicate
+                    f.add_fact(antiFact)
+                    r.add_fact(antiFact)
                     fb, rb = retract_fr(inference_yield, fb, rb)
+
+                # if the rule+fact triggers an assertion, assert the inferred fact/rule to KB
+                # but first make that the child of the rule+fact that triggered the assertion,
+                # if it is not already
                 elif (r.type == "Assert"):
                     if (type(inference_yield) is facts_and_rules.statement):
                         if (inference_yield.full not in [x.full for x in f.facts]):
@@ -93,6 +106,7 @@ def expand_existing(fb, rb):
                         if (inference_yield.full not in [x.full for x in r.rules]):
                             r.add_rule(inference_yield)
                     fb, rb = assert_fr(inference_yield, fb, rb)
+                
                 else:
                     raise ValueError("rule type is neither Assert nor Retract")
     return fb, rb
@@ -115,13 +129,18 @@ def assert_fr(obj, fb, rb):
                 inference_yield = infer_from_fact(obj, r, fb, rb)
                 if (inference_yield != False):
                     
-                    # if the newly added fact triggers a retraction, remove the now invalidated fact
-                    # and all facts/rules that it supports
+                    # if the newly added fact triggers a retraction, remove the now invalidated FACT
+                    # and all facts/rules that it supports, but first add it's anti-fact as child
                     if (r.type == "Retract"):
+                        antiFact = facts_and_rules.statement(inference_yield.full)
+                        antiFact.predicate = '~' + inference_yield.predicate
+                        obj.add_fact(antiFact)
+                        r.add_fact(antiFact)
                         fb, rb = retract_fr(inference_yield, fb, rb)
 
                     # if the newly added fact triggers an assertion, assert the inferred fact/rule to KB
-                    # but first make that the child of the fact+rule that triggered the assertion
+                    # but first make that the child of the fact+rule that triggered the assertion, if it
+                    # is not already
                     elif (r.type == "Assert"):
                         if (type(inference_yield) is facts_and_rules.statement):
                             if (inference_yield.full not in [x.full for x in obj.facts]):
@@ -152,13 +171,18 @@ def assert_fr(obj, fb, rb):
                 inference_yield = infer_from_fact(f, obj, fb, rb)
                 if (inference_yield != False):
 
-                    # if the newly added rule triggers a retraction, remove the now invalidated fact
-                    # and all facts/rules that it supports
+                    # if the newly added rule triggers a retraction, remove the now invalidated FACT
+                    # and all facts/rules that it supports, but first add it's anti-fact as child
                     if (obj.type == "Retract"):
+                        antiFact = facts_and_rules.statement(inference_yield.full)
+                        antiFact.predicate = '~' + inference_yield.predicate
+                        f.add_fact(antiFact)
+                        obj.add_fact(antiFact)
                         fb, rb = retract_fr(inference_yield, fb, rb)
                     
                     # if the newly added rule triggers an assertion, assert the inferred fact/rule to KB
-                    # but first make that the child of the rule+fact that triggered the assertion
+                    # but first make that the child of the rule+fact that triggered the assertion, if it
+                    # is not already
                     elif (obj.type == "Assert"):
                         if (type(inference_yield) is facts_and_rules.statement):
                             if (inference_yield.full not in [x.full for x in obj.facts]):
@@ -187,11 +211,17 @@ Retract an existing fact (or rule) from KB, as well as all facts/rules which it 
 def retract_fr(obj, fb, rb):
      # base case:
     if ((len(obj.facts) == 0) and (len(obj.rules) == 0)):
+
         if (type(obj) is facts_and_rules.statement):
-            for f in fb:
-                if (f.full == obj.full):
-                    fb.remove(f)
-                    return fb, rb
+            if (obj.predicate[0] == '~'):
+                obj.predicate = obj.predicate.lstrip('~')
+                fb, rb = assert_fr(obj, fb, rb)
+                return fb, rb
+            else:
+                for f in fb:
+                    if (f.full == obj.full):
+                        fb.remove(f)
+                        return fb, rb
 
         elif (type(obj) is facts_and_rules.rule):
             for r in rb:
@@ -206,10 +236,15 @@ def retract_fr(obj, fb, rb):
             fb, rb = retract_fr(child, fb, rb)
 
         if (type(obj) is facts_and_rules.statement):
-            for f in fb:
-                if (f.full == obj.full):
-                    fb.remove(f)
-                    return fb, rb
+            if (obj.predicate[0] == '~'):
+                obj.predicate = obj.predicate.lstrip('~')
+                fb, rb = assert_fr(obj, fb, rb)
+                return fb, rb
+            else:
+                for f in fb:
+                    if (f.full == obj.full):
+                        fb.remove(f)
+                        return fb, rb
 
         elif (type(obj) is facts_and_rules.rule):
             for r in rb:
@@ -239,10 +274,9 @@ def ask(patterns, fb):
 if __name__ == '__main__':
     facts, rules = read.read_tokenize("statements.txt")
 
-    # Fact Base, Rule Base, and a buffer to store retracted rules/facts which can be later restored
+    # initialize Fact Base, Rule Base as empty lists
     FB = []
     RB = []
-    # graveyard = []
 
     # populate FB and RB with initial knowledge from file
     for f in facts:
